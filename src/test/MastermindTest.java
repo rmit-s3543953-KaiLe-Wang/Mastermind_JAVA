@@ -1,13 +1,11 @@
 package test;
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import model.Mastermind;
 
 class MastermindTest {
-	Mastermind m = new Mastermind();
+	Mastermind m = new Mastermind(false);
 	String messageBlock = "----------------------";
 	//checkCode() test1: valid input pairs, suppose to get CW
 	@Test

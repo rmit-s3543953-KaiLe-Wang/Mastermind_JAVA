@@ -1,15 +1,17 @@
 package model;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 public class Mastermind {
 
 	private static Map<Integer,Color> indexToColor;
 	private static List<int[]> combinations;
 	private static List<int[]> candidateSolutions;
+	private static boolean isDuplicateColorsAllowed;
 	
 	static int[] guess= {-3,-3,-3,-3};
 	static int[] targetCode= {-3,-3,-3,-3};
 	
-	private static final int[] ERROR_CODE= {-3,-3,-3,-3};
+	public static final int[] ERROR_CODE= {-3,-3,-3,-3};
 	public static final int COLORS_TO_GUESS = 4;
 	static final int CHECKED_TARGET =-2;
 	static final int CHECKED_CODE =-1;
@@ -23,23 +25,53 @@ public class Mastermind {
 		PINK,
 		WHITE
 	}
-	public Mastermind() {
+	public Mastermind(boolean duplicateColors) {
+		isDuplicateColorsAllowed=duplicateColors;
 		init();
 	}
+	public boolean judge() {
+		return checkCode().equals("CCCC");
+	}
+	private static int[] randomTargetGen() {
+		int[] result= {0,0,0,0};
+		if(isDuplicateColorsAllowed) {
+			for(int i =0;i<COLORS_TO_GUESS;i++) {
+				int randomNum = ThreadLocalRandom.current().nextInt(0, Color.values().length + 1);
+				result[i]=randomNum;
+			}
+		}
+		else {
+			int[] indexCandidates = {0,1,2,3,4,5}; 
+			ArrayList<Integer> candidates= new ArrayList<Integer>();
+			for(int i : indexCandidates) {
+				candidates.add(i);
+			}
+			for(int i =0;i<COLORS_TO_GUESS;i++) {
+				int randomNum = ThreadLocalRandom.current().nextInt(0, candidates.size());
+				result[i]=candidates.get(randomNum);
+				candidates.remove(randomNum);
+			}
+		}
+		return result;
+	}
 	public void setGuess(int[] code) {
+		for(int i=0;i<code.length;i++) {
+			if(code[i]>Color.values().length-1||code[i]<0) {
+				return;
+			}
+		}
 		if(code.length==COLORS_TO_GUESS)
 			guess = code;
 	}
-	public String getGuess() {
-		String message = new String(guess.toString());
-		return message;
+	public int[] getGuess() {
+		return guess;
 	}
 	public void setTarget(int[] target) {
 		if(target.length==COLORS_TO_GUESS)
 			targetCode = target;
 	}
 	public String getTarget() {
-		String message = new String(targetCode.toString());
+		String message = new String(Arrays.toString(targetCode));
 		return message;
 	}
 	public static void init() {
@@ -51,6 +83,7 @@ public class Mastermind {
 		//Set<Integer> keys = indexToColor.keySet();
 		combinations=createCombinations(new int[COLORS_TO_GUESS],indexToColor.size());
 		candidateSolutions=createCombinations(new int[COLORS_TO_GUESS],indexToColor.size());
+		targetCode=randomTargetGen();
 	}
 	private static List<int[]> createCombinations(int data[],int max){
 		List<int[]> results = new ArrayList<>();
