@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import model.Mastermind;
 
 class MastermindTest {
-	Mastermind m = new Mastermind(false);
+	Mastermind m = new Mastermind();
 	String messageBlock = "----------------------";
 	//checkCode() test1: valid input pairs, suppose to get CW
 	@Test

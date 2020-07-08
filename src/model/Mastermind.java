@@ -3,9 +3,6 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 public class Mastermind {
 
-	private static Map<Integer,Color> indexToColor;
-	private static List<int[]> combinations;
-	private static List<int[]> candidateSolutions;
 	private static boolean isDuplicateColorsAllowed;
 	
 	static int[] guess= {-3,-3,-3,-3};
@@ -15,6 +12,7 @@ public class Mastermind {
 	public static final int COLORS_TO_GUESS = 4;
 	static final int CHECKED_TARGET =-2;
 	static final int CHECKED_CODE =-1;
+	static final int[] EMPTY_SET = {};
 	
 	//color declaration
 	enum Color{
@@ -25,9 +23,9 @@ public class Mastermind {
 		PINK,
 		WHITE
 	}
-	public Mastermind(boolean duplicateColors) {
-		isDuplicateColorsAllowed=duplicateColors;
-		init();
+	public Mastermind() {
+		isDuplicateColorsAllowed=false;
+		targetCode=randomTargetGen();
 	}
 	public boolean judge() {
 		return checkCode().equals("CCCC");
@@ -54,56 +52,49 @@ public class Mastermind {
 		}
 		return result;
 	}
+	public void setMode(boolean mode) {
+		isDuplicateColorsAllowed=mode;
+	}
 	public void setGuess(int[] code) {
+		//check value is valid, if found empty set or invalid code then return error.
 		for(int i=0;i<code.length;i++) {
-			if(code[i]>Color.values().length-1||code[i]<0) {
+			if(code[i]>Color.values().length-1||code[i]<0||Arrays.equals(code,EMPTY_SET)) {
+				guess = ERROR_CODE;
 				return;
 			}
 		}
+		//check array size, if not right then return error.
 		if(code.length==COLORS_TO_GUESS)
 			guess = code;
+		else
+			guess = ERROR_CODE;
 	}
 	public int[] getGuess() {
 		return guess;
 	}
 	public void setTarget(int[] target) {
+		for(int i=0;i<target.length;i++) {
+			if(target[i]>Color.values().length-1||target[i]<0||Arrays.equals(target,EMPTY_SET)) {
+				target = ERROR_CODE;
+				return;
+			}
+		}
 		if(target.length==COLORS_TO_GUESS)
 			targetCode = target;
+		else
+			targetCode = ERROR_CODE;
 	}
 	public String getTarget() {
 		String message = new String(Arrays.toString(targetCode));
 		return message;
 	}
-	public static void init() {
-		indexToColor = new HashMap<>();
-		for(int i =0; i <Color.values().length;i++) {
-			indexToColor.put(i,Color.values()[i]);
-		}	
-		combinations = new ArrayList<>();
-		//Set<Integer> keys = indexToColor.keySet();
-		combinations=createCombinations(new int[COLORS_TO_GUESS],indexToColor.size());
-		candidateSolutions=createCombinations(new int[COLORS_TO_GUESS],indexToColor.size());
-		targetCode=randomTargetGen();
-	}
-	private static List<int[]> createCombinations(int data[],int max){
-		List<int[]> results = new ArrayList<>();
-		for (int i =0 ; i<max;i++) {
-			for (int j=0; j<max;j++) {
-				for(int k=0;k<max;k++) {
-					for(int l=0;l<max;l++) {
-						int[] temp = {i,j,k,l};
-						results.add(temp);
-					}
-				}
-			}
-		}
-		return results;
-	}
+	
 	public String checkCode() {
-		if(guess!=null&&targetCode!=null)
-			return checkCode(guess,targetCode);
-		else
-			return "ERROR- EMPTY DATA";
+		if(guess!=null&&targetCode!=null) {
+			if(!Arrays.equals(guess, EMPTY_SET)||!Arrays.equals(targetCode, EMPTY_SET))
+				return checkCode(guess,targetCode);
+		}
+		return "";
 	}
 	public String checkCode(int[] code,int[] target) {
 		String result = new String("");
@@ -136,63 +127,4 @@ public class Mastermind {
 		}
 		return result;
 	}
-	public static void main(String[] args) {
-		//create sets
-		init();
-		//get response from first guess
-		//if won, terminate program with winning message
-		/*TODO
-		 * guess code function()
-		 *     
-		 * judge code that decides game end
-		 * 
-		 * remove from S any code that would not give the same response if the current guess were the code.
-		 * 
-		 * vector<vector<int>> minmax() {
-
-    map<string, int> scoreCount;
-    map<vector<int>, int> score;
-    vector<vector<int>> nextGuesses;
-    int max, min;
-
-    for (int i = 0; i < combinations.size(); ++i) {
-
-        for (int j = 0; j < candidateSolutions.size(); ++j) {
-
-            string pegScore = checkCode(combinations[i], candidateSolutions[j]);
-            if (scoreCount.count(pegScore) > 0) {
-                scoreCount.at(pegScore)++;
-            }
-            else {
-                scoreCount.emplace(pegScore, 1);
-            }
-        }
-
-        max = getMaxScore(scoreCount);
-        score.emplace(combinations[i], max);
-        scoreCount.clear();
-    }
-
-    min = getMinScore(score);
-
-    for (auto elem : score) {
-        if (elem.second == min) {
-            nextGuesses.push_back(elem.first);
-        }
-    }
-
-    return nextGuesses;
-}
-		*/
-	}
-	public static void printCombinationsInColor(List<int[]> combinations,Map<Integer,Color> indexToColor) {
-		for (int[] combination : combinations) {
-		    for(int colorIndex : combination) {
-			System.out.print(indexToColor.get(colorIndex)+" ");
-		    }
-		    System.out.println();
-		}
-		System.out.println("total combinations: "+combinations.size());
-	}
-
 }
